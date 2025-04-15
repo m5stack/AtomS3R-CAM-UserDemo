@@ -1,0 +1,10 @@
+managed_components
+build
+.vscode
+.cache
+components/arduino-esp32
+components/ArduinoJson
+components/mooncake
+components/esp32-camera
+components/M5GFX
+components/M5Unified
