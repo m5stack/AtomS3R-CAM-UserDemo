@@ -62,7 +62,9 @@ void SharedData::UpdateImuData()
     GetData().imu->readGyroscope(GetData().imu_data.gyroX, GetData().imu_data.gyroY, GetData().imu_data.gyroZ);
 
     if (!GetData().is_bmm150_ok) {
-        spdlog::info("bmm150 not available");
+        GetData().imu_data.magX = -1.0f;
+        GetData().imu_data.magY = -1.0f;
+        GetData().imu_data.magZ = -1.0f;
         return;
     }
 

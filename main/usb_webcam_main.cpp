@@ -71,16 +71,19 @@ static void imu_init()
         delete SharedData::GetData().imu;
         SharedData::GetData().imu = nullptr;
         spdlog::error("bmi270 init failed");
-    } else {
-        spdlog::info("bmi270 init ok");
+        return;
     }
+    spdlog::info("bmi270 init ok");
 
     if (!SharedData::GetData().imu->initAuxBmm150()) {
         SharedData::GetData().is_bmm150_ok = false;
-        spdlog::error("bmm150 init failed");
+        SharedData::GetData().imu_data.magX = -1.0f;
+        SharedData::GetData().imu_data.magY = -1.0f;
+        SharedData::GetData().imu_data.magZ = -1.0f;
+        spdlog::warn("bmm150 not detected, skip magnetometer; mag data will be set to -1");
     } else {
         SharedData::GetData().is_bmm150_ok = true;
-        spdlog::info("bmm150 init ok");
+        spdlog::info("bmm150 detected, init ok");
     }
 }
 
@@ -132,6 +135,7 @@ extern "C" int app_main(void)
     /* ----------------------------------- DI ----------------------------------- */
     shared_data_injection();
     asset_pool_injection();
+    spdlog::info("firmware version: {}", SharedData::AppVersion());
 
     /* ------------------------------ Hardware init ----------------------------- */
     enable_camera_power();

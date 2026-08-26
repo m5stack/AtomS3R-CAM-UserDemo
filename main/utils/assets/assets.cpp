@@ -6,6 +6,7 @@
 #include "assets.h"
 #include <mooncake.h>
 #include <algorithm>
+#include <cstddef>
 #include <cstring>
 #include <iterator>
 #include <string>
@@ -63,25 +64,45 @@ bool AssetPool::injectStaticAsset(StaticAsset_t* asset)
  *
  * @param filePath
  * @param target
+ * @param targetSize
  * @return true
  * @return false
  */
-static bool _copy_file(std::string filePath, uint8_t* target)
+static bool _copy_file(const std::string& filePath, uint8_t* target, std::size_t targetSize)
 {
     spdlog::info("try open {}", filePath);
 
     std::ifstream file(filePath, std::ios::binary | std::ios::ate);
     if (!file.is_open()) {
-        spdlog::error("open failed!", filePath);
+        spdlog::error("open failed: {}", filePath);
         return false;
     }
-    std::streampos file_size = file.tellg();
+
+    const std::streamoff file_size = file.tellg();
+    if (file_size < 0) {
+        spdlog::error("get file size failed: {}", filePath);
+        return false;
+    }
+
+    if (static_cast<std::size_t>(file_size) != targetSize) {
+        spdlog::error("asset size mismatch: {} is {} bytes, target array is {} bytes", filePath, file_size, targetSize);
+        return false;
+    }
+
     file.seekg(0, std::ios::beg);
     spdlog::info("file binary size {}", file_size);
 
-    // Copy and go
-    if (target != nullptr) file.read(reinterpret_cast<char*>(target), file_size);
-    file.close();
+    if (target == nullptr) {
+        spdlog::error("invalid target buffer for: {}", filePath);
+        return false;
+    }
+
+    file.read(reinterpret_cast<char*>(target), static_cast<std::streamsize>(targetSize));
+    if (!file) {
+        spdlog::error("read failed: {}", filePath);
+        return false;
+    }
+
     return true;
 }
 
@@ -114,27 +135,48 @@ static bool _copy_png_image(std::string filePath, uint16_t* target)
 
 StaticAsset_t* AssetPool::CreateStaticAsset()
 {
-    auto asset_pool = new StaticAsset_t;
+    auto asset_pool = new StaticAsset_t{};
 
-    _copy_file("../../main/utils/assets/images/index.html.gz", asset_pool->Image.index_html_gz);
-    _copy_file("../../main/utils/assets/images/m5.jpg", asset_pool->Image.m5_logo);
+    const bool html_ok = _copy_file("../../main/utils/assets/images/index.html.gz", asset_pool->Image.index_html_gz,
+                                    sizeof(asset_pool->Image.index_html_gz));
+    const bool logo_ok = _copy_file("../../main/utils/assets/images/m5.jpg", asset_pool->Image.m5_logo,
+                                    sizeof(asset_pool->Image.m5_logo));
+
+    if (!html_ok || !logo_ok) {
+        delete asset_pool;
+        return nullptr;
+    }
 
     return asset_pool;
 }
 
-void AssetPool::CreateStaticAssetBin(StaticAsset_t* assetPool)
+bool AssetPool::CreateStaticAssetBin(StaticAsset_t* assetPool)
 {
+    if (assetPool == nullptr) {
+        spdlog::error("invalid static asset");
+        return false;
+    }
+
     /* -------------------------------------------------------------------------- */
     /*                                Output to bin                               */
     /* -------------------------------------------------------------------------- */
     std::string bin_path = "../output/AssetPool.bin";
 
     std::ofstream outFile(bin_path, std::ios::binary);
-    if (!outFile) spdlog::error("open {} failed", bin_path);
+    if (!outFile) {
+        spdlog::error("open {} failed", bin_path);
+        return false;
+    }
 
     outFile.write(reinterpret_cast<const char*>(assetPool), sizeof(StaticAsset_t));
+    if (!outFile) {
+        spdlog::error("write {} failed", bin_path);
+        return false;
+    }
+
     outFile.close();
     spdlog::info("output asset pool to: {}", bin_path);
+    return true;
 }
 
 StaticAsset_t* AssetPool::GetStaticAssetFromBin()

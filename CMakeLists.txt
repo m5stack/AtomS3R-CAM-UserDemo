@@ -22,4 +22,5 @@ if (ENABLE_EYES_SHOW)
   message("EYES_SHOW_TARGET is set to none")
 endif()
 
+set(PROJECT_VER "0.2")
 project(usb_webcam)

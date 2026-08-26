@@ -12,7 +12,7 @@
 /* -------------------------------------------------------------------------- */
 /*                                    Misc                                    */
 /* -------------------------------------------------------------------------- */
-#define APP_VERSION "V0.1"
+#define APP_VERSION "V0.2"
 
 /* -------------------------------------------------------------------------- */
 /*                                Service mode                                */
@@ -30,17 +30,17 @@ enum ServiceMode_t {
 /* -------------------------------------------------------------------------- */
 namespace IMU {
 struct ImuData_t {
-    float accelX;
-    float accelY;
-    float accelZ;
+    float accelX = 0.0f;
+    float accelY = 0.0f;
+    float accelZ = 0.0f;
 
-    float gyroX;
-    float gyroY;
-    float gyroZ;
+    float gyroX = 0.0f;
+    float gyroY = 0.0f;
+    float gyroZ = 0.0f;
 
-    float magX;
-    float magY;
-    float magZ;
+    float magX = -1.0f;
+    float magY = -1.0f;
+    float magZ = -1.0f;
 };
 }  // namespace IMU
 
