@@ -47,6 +47,7 @@ static void imu_data_ws_daemon(void* param)
             doc["mx"] = SharedData::GetImuData().magX;
             doc["my"] = SharedData::GetImuData().magY;
             doc["mz"] = SharedData::GetImuData().magZ;
+            doc["mag_available"] = SharedData::IsBmm150Available();
             serializeJson(doc, json_buffer);
             // printf("%s\n", json_buffer.c_str());
 

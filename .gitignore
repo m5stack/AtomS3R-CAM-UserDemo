@@ -8,3 +8,5 @@ components/mooncake
 components/esp32-camera
 components/M5GFX
 components/M5Unified
+scripts/
+test_firmware/

@@ -39,8 +39,8 @@ void start_service_web_server()
 
     // Load page
     web_server->on("/", HTTP_GET, [](AsyncWebServerRequest* request) {
-        AsyncWebServerResponse* response =
-            request->beginResponse_P(200, "text/html", AssetPool::GetImage().index_html_gz, 234419);
+        AsyncWebServerResponse* response = request->beginResponse_P(
+            200, "text/html", AssetPool::GetImage().index_html_gz, sizeof(AssetPool::GetImage().index_html_gz));
         response->addHeader("Content-Encoding", "gzip");
         request->send(response);
     });

@@ -156,6 +156,12 @@ public:
     {
         return Get()->_data.imu_data;
     }
+    static bool IsBmm150Available()
+    {
+        const bool is_available = BorrowData().is_bmm150_ok;
+        ReturnData();
+        return is_available;
+    }
 
     /* -------------------------------------------------------------------------- */
     /*                                     IR                                     */
